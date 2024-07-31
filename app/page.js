@@ -1,32 +1,82 @@
 "use client";
-import { Box, Stack, Typography, Button, Modal } from "@mui/material";
+import {
+  Box,
+  Stack,
+  Typography,
+  Button,
+  Modal,
+  TextField,
+} from "@mui/material";
 import { firestore } from "@/firebase";
-import { collection, getDocs, query } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  setDoc,
+  doc,
+  deleteDoc,
+  getDoc,
+  count,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 export default function Home() {
   // using useState to store the pantry items
   const [pantry, setPantry] = useState([]);
 
-  // async code does not work inside useEffect
-  // so we are using a function inside useEffect
-  // we are using useEffect to get pantry items from firestore
-  useEffect(() => {
-    const updatePantry = async () => {
-      const snapshot = query(collection(firestore, "pantry"));
-      const docs = await getDocs(snapshot);
-      const pantryList = [];
-      docs.forEach((doc) => {
-        pantryList.push(doc.id);
-      });
-      setPantry(pantryList);
-    };
-    updatePantry();
-  }, []);
-
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  // useState for adding the item name
+  const [itemName, setItemName] = useState("");
+
+  // async code does not work inside useEffect
+  // so we are creating the updatePantry function outside of useEffect
+  const updatePantry = async () => {
+    const snapshot = query(collection(firestore, "pantry"));
+    const docs = await getDocs(snapshot);
+    const pantryList = [];
+    docs.forEach((doc) => {
+      pantryList.push({ name: doc.id, ...doc.data() });
+    });
+    setPantry(pantryList);
+  };
+
+  // we are using useEffect to get pantry items from firestore
+  useEffect(() => {
+    updatePantry();
+  }, []);
+
+  const addItem = async (item) => {
+    const docRef = doc(collection(firestore, "pantry"), item);
+
+    // check if the item already exists in the pantry
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const { count } = docSnap.data();
+      await setDoc(docRef, { count: count + 1 });
+    } else {
+      await setDoc(docRef, { count: 1 });
+      // console.log(item);
+    }
+    await updatePantry();
+  };
+
+  const removeItem = async (item) => {
+    const docRef = doc(collection(firestore, "pantry"), item);
+
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const { count } = docSnap.data();
+      if (count > 1) {
+        await setDoc(docRef, { count: count - 1 });
+      } else {
+        await deleteDoc(docRef);
+      }
+    }
+    await updatePantry();
+  };
 
   const styleModal = {
     position: "absolute",
@@ -38,6 +88,9 @@ export default function Home() {
     border: "2px solid #000",
     boxShadow: 24,
     p: 4,
+    display: "flex",
+    flexDirection: "column",
+    gap: 3,
   };
 
   return (
@@ -63,26 +116,33 @@ export default function Home() {
             Pantry Items
           </Typography>
         </Box>
-        <Stack width="800px" height="500px" spacing={2} overflow={"auto"}>
+        <Stack width="800px" height="300px" spacing={2} overflow={"auto"}>
           {/* map every time in the pantry array */}
-          {pantry.map((i) => (
+          {pantry.map(({ name, count }) => (
             <Box
-              key={i}
+              key={name}
               width="100%"
               minHeight="150px"
               display={"flex"}
-              justifyContent={"center"}
+              justifyContent={"space-between"}
               alignItems={"center"}
               bgcolor={"lightgray"}
-              color={"white"}
-              fontSize={"2rem"}
+              paddingX={5}
             >
               <Typography variant={"h3"} color={"#333"} textAlign={"center"}>
                 {
                   // Captilize the first letter of the item
-                  i.charAt(0).toUpperCase() + i.slice(1)
+                  name.charAt(0).toUpperCase() + name.slice(1)
                 }
               </Typography>
+
+              <Typography variant={"h3"} color={"#333"} textAlign={"center"}>
+                Quantity: {count}
+              </Typography>
+
+              <Button variant="contained" onClick={() => removeItem(name)}>
+                Delete
+              </Button>
             </Box>
           ))}
         </Stack>
@@ -95,11 +155,28 @@ export default function Home() {
       >
         <Box sx={styleModal}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            Text in a modal
+            Insert Pantry Item
           </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-          </Typography>
+          <Stack width={"100%"} spacing={2} direction={"row"}>
+            <TextField
+              id="outlined-basic"
+              label="Item"
+              variant="outlined"
+              fullWidth
+              value={itemName}
+              onChange={(e) => setItemName(e.target.value)}
+            />
+            <Button
+              variant="outlined"
+              onClick={() => {
+                addItem(itemName);
+                handleClose();
+                setItemName("");
+              }}
+            >
+              Add
+            </Button>
+          </Stack>
         </Box>
       </Modal>
       <Button variant="outlined" onClick={handleOpen}>
