@@ -7,7 +7,11 @@ import {
   Modal,
   TextField,
 } from "@mui/material";
+// import { TextareaAutosize } from "@mui/base/TextareaAutosize";
+// import { styled } from "@mui/system";
+
 import { firestore } from "@/firebase";
+
 import {
   collection,
   getDocs,
@@ -19,6 +23,7 @@ import {
   count,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import React from "react";
 
 export default function Home() {
   // using useState to store the pantry items
@@ -30,6 +35,9 @@ export default function Home() {
 
   // useState for adding the item name
   const [itemName, setItemName] = useState("");
+
+  // useState for the search item
+  const [searchItem, setSearchItem] = useState("");
 
   // async code does not work inside useEffect
   // so we are creating the updatePantry function outside of useEffect
@@ -47,6 +55,22 @@ export default function Home() {
   useEffect(() => {
     updatePantry();
   }, []);
+
+  // function to handle pantry item search
+  const searchPantry = async (item) => {
+    const snapshot = await getDocs(collection(firestore, "pantry"));
+    const pantryList = [];
+    snapshot.forEach((doc) => {
+      pantryList.push({ name: doc.id, ...doc.data() });
+    });
+
+    // Filter items that contain the search term
+    const filteredPantry = pantryList.filter((pantryItem) =>
+      pantryItem.name.toLowerCase().includes(item.toLowerCase())
+    );
+
+    setPantry(filteredPantry);
+  };
 
   const addItem = async (item) => {
     const docRef = doc(collection(firestore, "pantry"), item);
@@ -116,7 +140,33 @@ export default function Home() {
             Pantry Items
           </Typography>
         </Box>
-        <Stack width="800px" height="300px" spacing={2} overflow={"auto"}>
+
+        <Box
+          width="800px"
+          height="100px"
+          bgcolor={"#ADD8E6"}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
+          paddingX={5}
+          gap={"10px"}
+        >
+          <TextField
+            id="filled-search"
+            label="Search field"
+            type="search"
+            variant="filled"
+            value={searchItem}
+            onChange={(e) => setSearchItem(e.target.value)}
+            // textAlign={"center"}
+            fullWidth
+          />
+          <Button variant="contained" onClick={() => searchPantry(searchItem)}>
+            Search
+          </Button>
+        </Box>
+
+        <Stack width="800px" height="500px" spacing={2} overflow={"auto"}>
           {/* map every time in the pantry array */}
           {pantry.map(({ name, count }) => (
             <Box
