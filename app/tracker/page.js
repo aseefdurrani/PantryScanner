@@ -23,6 +23,12 @@ import { useEffect, useState } from "react";
 import React from "react";
 import backgroundImage from "@/app/lemon.jpeg"; // Adjust the path as necessary
 import { useRouter } from "next/navigation";
+// import { camera } from "react-camera-pro";
+// import CameraAltIcon from '@mui/icons-material/CameraAlt';
+// import SwitchCameraIcon from '@mui/icons-material/SwitchCamera';
+import CameraComponent from "./camera";
+import { light } from "@mui/material/styles/createPalette";
+import { lightBlue } from "@mui/material/colors";
 
 export default function Home() {
   // State for storing pantry items
@@ -32,6 +38,11 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  // State for controlling the camera modal
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const handleCameraOpen = () => setCameraOpen(true);
+  const handleCameraClose = () => setCameraOpen(false);
 
   // State for new item name
   const [itemName, setItemName] = useState("");
@@ -373,10 +384,53 @@ export default function Home() {
                   handleClose();
                   setItemName("");
                 }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: lightBlue[50],
+                  },
+                }}
               >
                 Add
               </Button>
             </Stack>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                addItem(itemName);
+                handleClose();
+                setItemName("");
+              }}
+              sx={{
+                "&:hover": {
+                  backgroundColor: lightBlue[50],
+                },
+              }}
+            >
+              Attach Image for Item
+            </Button>
+          </Box>
+        </Modal>
+
+        {/* Modal for camera */}
+        <Modal
+          open={cameraOpen}
+          onClose={handleCameraClose}
+          aria-labelledby="camera-modal-title"
+          aria-describedby="camera-modal-description"
+        >
+          <Box>
+            <CameraComponent />
+
+            <Button
+              variant="outlined"
+              onClick={() => {
+                addItem(itemName);
+                handleClose();
+                setItemName("");
+              }}
+            >
+              Insert Pantry Item
+            </Button>
           </Box>
         </Modal>
 
@@ -397,7 +451,7 @@ export default function Home() {
           </Button>
           <Button
             variant="contained"
-            onClick={handleOpen}
+            onClick={handleCameraOpen}
             sx={{
               marginTop: 2,
               bgcolor: darkColor,
