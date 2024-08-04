@@ -8,6 +8,7 @@ import {
   TextField,
   AppBar,
   Toolbar,
+  Snackbar,
 } from "@mui/material";
 import { firestore } from "@/firebase";
 import {
@@ -23,11 +24,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import backgroundImage from "@/app/lemon.jpeg"; // Adjust the path as necessary
 import { useRouter } from "next/navigation";
-// import { camera } from "react-camera-pro";
-// import CameraAltIcon from '@mui/icons-material/CameraAlt';
-// import SwitchCameraIcon from '@mui/icons-material/SwitchCamera';
 import CameraComponent from "./camera";
-import { light } from "@mui/material/styles/createPalette";
 import { lightBlue } from "@mui/material/colors";
 
 export default function Home() {
@@ -49,6 +46,20 @@ export default function Home() {
 
   // State for search term
   const [searchItem, setSearchItem] = useState("");
+
+  // State for snackbar
+  const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
+  // function to handle feature not available
+  const handleFeatureNotAvailable = () => {
+    setIsSnackbarOpen(true);
+  };
+  // function to close snackbar
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setIsSnackbarOpen(false);
+  };
 
   // Function to fetch and update pantry items
   const updatePantry = async () => {
@@ -395,11 +406,7 @@ export default function Home() {
             </Stack>
             <Button
               variant="outlined"
-              onClick={() => {
-                addItem(itemName);
-                handleClose();
-                setItemName("");
-              }}
+              onClick={handleFeatureNotAvailable}
               sx={{
                 "&:hover": {
                   backgroundColor: lightBlue[50],
@@ -408,6 +415,18 @@ export default function Home() {
             >
               Attach Image for Item
             </Button>
+            <Snackbar
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              open={isSnackbarOpen}
+              autoHideDuration={2000}
+              onClose={handleSnackbarClose}
+              message="Feature to be released soon!"
+              ContentProps={{
+                sx: {
+                  backgroundColor: "lightcoral", // Light red color
+                },
+              }}
+            />
           </Box>
         </Modal>
 
