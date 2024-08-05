@@ -1,7 +1,6 @@
 // import OpenAI from "openai";
 // import dotenv from "dotenv";
 // dotenv.config();
-// console.log("API Key:", process.env.NEXT_PUBLIC_OPENAI_API_KEY); // This should show your API key
 
 // const api_key = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 
