@@ -26,6 +26,8 @@ import backgroundImage from "@/app/lemon.jpeg"; // Adjust the path as necessary
 import { useRouter } from "next/navigation";
 import CameraComponent from "./camera";
 import { lightBlue } from "@mui/material/colors";
+import imageProcess from "./services/imageProcess";
+import { fetchOpenAIResponse } from "./services/openAIHandler";
 
 export default function Home() {
   // State for storing pantry items
@@ -47,6 +49,9 @@ export default function Home() {
   // State for search term
   const [searchItem, setSearchItem] = useState("");
 
+  // state to store captured image
+  const [capturedImage, setCapturedImage] = useState(null);
+
   // State for snackbar
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
   // function to handle feature not available
@@ -59,6 +64,14 @@ export default function Home() {
       return;
     }
     setIsSnackbarOpen(false);
+  };
+
+  // function to handle camera capture
+  const handleImageCapture = async (image) => {
+    setCapturedImage(image);
+    console.log("captured image:", image); // IMAGE IS A BASE64 STRING
+    // const description = await fetchOpenAIResponse(image); // I WANT TO USE THIS FUNCTION TO GET DESCRIPTION BACK BUT HOW CAN I MAKE IT SERVER SIDE
+    // console.log("here is result:", description);
   };
 
   // Function to fetch and update pantry items
@@ -437,19 +450,33 @@ export default function Home() {
           aria-labelledby="camera-modal-title"
           aria-describedby="camera-modal-description"
         >
-          <Box>
-            <CameraComponent />
+          <Box sx={{ textAlign: "center" }}>
+            <CameraComponent onImageCapture={handleImageCapture} />
 
             <Button
-              variant="outlined"
-              onClick={() => {
-                addItem(itemName);
-                handleClose();
-                setItemName("");
+              variant="contained"
+              onClick={handleFeatureNotAvailable}
+              sx={{
+                marginTop: 1,
+                display: "block", // ensures the button is displayed as a block element
+                marginLeft: "auto", // aligns the button to the center horizontally
+                marginRight: "auto", // aligns the button to the center horizontally
               }}
             >
               Insert Pantry Item
             </Button>
+            <Snackbar
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              open={isSnackbarOpen}
+              autoHideDuration={2000}
+              onClose={handleSnackbarClose}
+              message="Feature to be released soon!"
+              ContentProps={{
+                sx: {
+                  backgroundColor: "lightcoral", // Light red color
+                },
+              }}
+            />
           </Box>
         </Modal>
 
