@@ -2,6 +2,8 @@
 // import dotenv from "dotenv";
 // dotenv.config();
 
+// why is this being strange
+
 // const api_key = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 
 // const openai = new OpenAI({ apiKey: api_key });
