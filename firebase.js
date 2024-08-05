@@ -21,7 +21,15 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// Check if analytics is supported in the current environment
+// if (typeof window !== "undefined" && getAnalytics.isSupported()) {
+//   const analytics = getAnalytics(app);
+// }
+
+// analytics also not working for some reason
+
+// Initialize Firestore
 const firestore = getFirestore(app);
 
 export { app, firestore };
